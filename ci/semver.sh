@@ -13,7 +13,10 @@ if ! rustc --version | grep -E "nightly" ; then
     exit 1
 fi
 
-cargo +nightly install semverver -Z install-upgrade
+rustup component add rustc-dev llvm-tools-preview
+
+# Should update the nightly version in bors CI config if we touch this.
+cargo install --locked --git https://github.com/rust-lang/rust-semverver --rev 6d2403c219834d3a6c44cec093db820a0dbe5d21
 
 TARGETS=
 case "${OS}" in
@@ -36,8 +39,7 @@ x86_64-unknown-freebsd \
 x86_64-unknown-linux-gnu \
 x86_64-unknown-linux-musl \
 x86_64-unknown-netbsd \
-x86_64-unknown-cloudabi \
-x86_64-sun-solaris \
+x86_64-pc-solaris \
 x86_64-fuchsia \
 x86_64-pc-windows-gnu \
 x86_64-unknown-linux-gnux32 \
@@ -46,13 +48,9 @@ x86_64-fortanix-unknown-sgx \
 wasm32-unknown-unknown \
 "
     ;;
-    *osx*)
+    *macos*)
         TARGETS="\
 aarch64-apple-ios \
-armv7-apple-ios \
-armv7s-apple-ios \
-i386-apple-ios \
-i686-apple-darwin \
 x86_64-apple-darwin \
 x86_64-apple-ios \
 "
@@ -73,5 +71,5 @@ for TARGET in $TARGETS; do
         sleep 1
     done
 
-    cargo +nightly semver --api-guidelines --target="${TARGET}"
+    cargo semver --api-guidelines --target="${TARGET}"
 done
